@@ -20,25 +20,53 @@ public_users.post("/register", (req,res) => {
     return res.status(404).json({ message: "Unable to register user." });
 });
 
+function getBooks(){
+    return books;
+}
+
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-  return res.send(books);
+    new Promise((resolve, reject) => {
+        
+        const currentBooks = getBooks();  
+        
+        if (currentBooks) {
+          resolve(currentBooks);
+        } else {
+          reject('No books found');
+        }
+      })
+      .then((currentBooks) => {
+        return res.send(currentBooks); 
+      })
+      .catch((error) => {
+        return res.status(500).send({ error: error }); 
+      });
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
+public_users.get('/isbn/:isbn', function (req, res) {
     const isbn = req.params.isbn;
 
-    let book = books[isbn];
-    if(book){
-        return res.send(book);
-    }
-
-    return res.status(404).json({ message: "Book not found" });
-
- });
+    // Create a new Promise
+    new Promise((resolve, reject) => {
+        const book = books[isbn];
+        
+        if (book) {
+            resolve(book);  // Resolving the Promise with the book if found
+        } else {
+            reject({ message: "Book not found" });  // Rejecting the Promise if not found
+        }
+    })
+    .then(book => {
+        return res.send(book);  // Send the book in the response if resolved
+    })
+    .catch(err => {
+        return res.status(404).json(err);  // Send error response if rejected
+    });
+});
   
- function findBookByAuthor(author) {
+function findBookByAuthor(author) {
     // Loop through each book in the 'books' object
     for (let id in books) {
       if (books[id].author === author) {
@@ -46,41 +74,60 @@ public_users.get('/isbn/:isbn',function (req, res) {
       }
     }
     return null; // Return null if no match is found
-  }
+}
 
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
 
     const author = req.params.author;
-    let book = findBookByAuthor(author);
 
-    if(book){
-        return res.send(book);
-    }
+    // Create a new Promise
+    new Promise((resolve, reject) => {
+        const book = findBookByAuthor(author);
 
-    return res.status(404).json({ message: "Book not found" });
-
+        if (book) {
+            resolve(book);  // Resolve the promise with the book if found
+        } else {
+            reject({ message: "Book not found" });  // Reject the promise if the book is not found
+        }
+    })
+    .then(book => {
+        return res.send(book);  // Send the book in the response if the promise resolves
+    })
+    .catch(err => {
+        return res.status(404).json(err);  // Send the error response if the promise is rejected
+    });
 });
 
 function findBookByTitle(title) {
     for (let id in books) {
       if (books[id].title === title) {
-        return books[id]; 
+        return books[id]; // Return the book if the title matches
       }
     }
     return null; // Return null if no match is found
-  }
+}
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
     const title = req.params.title;
-    let book = findBookByTitle(title);
 
-    if(book){
-        return res.send(book);
-    }
+     // Create a new Promise
+     new Promise((resolve, reject) => {
+        const book = findBookByTitle(title);
 
-    return res.status(404).json({ message: "Book not found" });
+        if (book) {
+            resolve(book);  // Resolve the promise with the book if found
+        } else {
+            reject({ message: "Book not found" });  // Reject the promise if the book is not found
+        }
+    })
+    .then(book => {
+        return res.send(book);  // Send the book in the response if the promise resolves
+    })
+    .catch(err => {
+        return res.status(404).json(err);  // Send the error response if the promise is rejected
+    });
 });
 
 //  Get book review
