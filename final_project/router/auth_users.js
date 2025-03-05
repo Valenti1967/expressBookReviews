@@ -43,14 +43,23 @@ regd_users.post("/login", (req,res) => {
 });
 
 // Add a book review
+//customer/auth/review/9?review=123
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
+    const review = req.query["review"];
+    
 
-    req.username    
+    if (books[isbn] && books[isbn].reviews){    
+        if( req.username in books[isbn].reviews) {
+        books[isbn].reviews[req.username] = review;
+        return res.status(200).send("User successfully updated review");
+      } else {
+        books[isbn].reviews[req.username] = review;
+        return res.status(200).send("User successfully added review");
+      }
+    }  
 
-
-
-    res.send();
+    return res.status(404).json({ message: "Book not found" });
 
 
 });
